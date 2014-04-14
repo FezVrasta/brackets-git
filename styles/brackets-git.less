@@ -523,6 +523,7 @@
 // nice, formatted and colored diff
 .commit-diff {
     .selectable-text();
+    cursor: text;
     code, pre {
         background: none;
         border: none;
@@ -539,19 +540,31 @@
         border: none;
         border-radius: 0px;
         margin: 0px;
-        padding: 0px;
+        padding: 1px 0;
         white-space: nowrap;
         &.added {
-            color: @green-text;
+            background-color: @lgreen-background;
+            &:before {
+                content: "+";
+            }
         }
         &.removed {
-            color: @red-text;
+            background-color: @lred-background;
+            &:before {
+                content: "-";
+            }
+        }
+        &.unchanged {
+            &:before {
+                content: "\0A0"; // &nbsp;
+            }
         }
         &.diffCmd {
             color: @blue-text;
         }
         &.position {
-            color: @orange-text;
+            color: @gray-text;
+            background-color: @lgray-background;
         }
         .trailingWhitespace {
             background-color: @red-background;

@@ -32,20 +32,35 @@ define(function (require, exports, module) {
 
     function formatDiff(diff) {
         var rv      = [],
-            tabSize = Preferences.getGlobal("tabSize");
+            tabSize = Preferences.getGlobal("tabSize"),
+            verbose = Preferences.get("useVerboseDiff");
 
         diff.split("\n").forEach(function (line) {
             if (line === " ") { line = ""; }
 
-            var lineClass;
-            if (line[0] === "+") {
+            var lineClass,
+                pushLine = true;
+
+            if (/index\s[A-z0-9]{7}..[A-z0-9]{7}/.test(line) && !verbose) {
+                pushLine = false;
+            } else if (line.substr(0, 3) === "+++" || line.substr(0, 3) === "---" && !verbose) {
+                pushLine = false;
+            } else if (line[0] === "+" && line[1] !== "+") {
                 lineClass = "added";
-            } else if (line[0] === "-") {
+                line = line.substring(1);
+            } else if (line[0] === "-" && line[1] !== "-") {
                 lineClass = "removed";
+                line = line.substring(1);
+            } else if (line[0] === " ") {
+                lineClass = "unchanged";
+                line = line.substring(1);
             } else if (line.indexOf("@@") === 0) {
                 lineClass = "position";
             } else if (line.indexOf("diff --git") === 0) {
                 lineClass = "diffCmd";
+                if (!verbose) {
+                    pushLine = false;
+                }
             }
 
             line = _.escape(line).replace(/\s/g, "&nbsp;");
@@ -56,7 +71,9 @@ define(function (require, exports, module) {
                             .attr("style", "tab-size:" + tabSize)
                             .html(line.length > 0 ? line : "&nbsp;");
             if (lineClass) { $line.addClass(lineClass); }
-            rv.push($line);
+            if (pushLine) {
+                rv.push($line);
+            }
         });
         return rv;
     }
